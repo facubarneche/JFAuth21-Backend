@@ -23,8 +23,7 @@ describe('Main', () => {
   it('should listen on the correct port', async () => {
     const listenSpy = jest.spyOn(app, 'listen'); // Hacemos un espía en el método 'listen'
 
-    // Establecemos el puerto por defecto en 3000 si no hay valor en process.env.PORT
-    const port = process.env.PORT ?? 3000;
+    const port = process.env.PORT ?? 8080;
 
     // Iniciamos la aplicación
     await app.listen(port);
