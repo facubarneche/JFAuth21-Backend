@@ -1,8 +1,12 @@
-name: Run Tests
+name: Run Backend Tests
 
 on:
   push:
-    branches: # Se ejecuta en las ramas siguientes
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
       - main
       - develop
 
@@ -40,4 +44,3 @@ jobs:
         run: |
           echo "Checking test coverage..."
           npm run test:cov || exit 1
-
