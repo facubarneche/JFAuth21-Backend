@@ -1,39 +1,31 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from './app.module';
-import { INestApplication } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app/app.module';
+import { bootstrap } from './main';
 
-describe('Main', () => {
-  let app: INestApplication;
+// Mocking NestFactory
+jest.mock('@nestjs/core', () => ({
+  NestFactory: {
+    create: jest.fn().mockResolvedValue({
+      listen: jest.fn(),
+    }),
+  },
+}));
 
-  beforeAll(async () => {
-    // Se crea el módulo de prueba de NestJS
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule], // Importamos el módulo principal
-    }).compile();
+describe('Main.ts bootstrap', () => {
+  it('should call NestFactory.create and app.listen with correct port', async () => {
+    const mockListen = jest.fn();
+    const mockApp = { listen: mockListen }; // Mocked app object
 
-    // Creamos la aplicación de NestJS
-    app = moduleFixture.createNestApplication();
-  });
+    // Ensure that NestFactory.create returns the mock app
+    (NestFactory.create as jest.Mock).mockResolvedValue(mockApp);
 
-  it('should be defined', () => {
-    // Verificamos que la app esté definida (que se haya creado correctamente)
-    expect(app).toBeDefined();
-  });
+    // Call the bootstrap function
+    await bootstrap();
 
-  it('should listen on the correct port', async () => {
-    const listenSpy = jest.spyOn(app, 'listen'); // Hacemos un espía en el método 'listen'
+    // Assert that create was called with the AppModule
+    expect(NestFactory.create).toHaveBeenCalledWith(AppModule);
 
-    const port = process.env.PORT ?? 8080;
-
-    // Iniciamos la aplicación
-    await app.listen(port);
-
-    // Verificamos que app.listen haya sido llamado con el puerto esperado
-    expect(listenSpy).toHaveBeenCalledWith(port);
-  });
-
-  afterAll(async () => {
-    // Cerramos la aplicación después de las pruebas
-    await app.close();
+    // Assert that listen was called with the expected port
+    expect(mockListen).toHaveBeenCalledWith(process.env.PORT ?? 3000);
   });
 });
